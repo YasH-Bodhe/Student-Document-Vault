@@ -1,0 +1,42 @@
+{
+  "name": "student-document-vault",
+  "version": "1.0.0",
+  "description": "Blockchain-based Student Certificate Verification System",
+  "author": "Yash Bodhe",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "blockchain",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "setup": "npm install && cd blockchain && npm install && cd ../server && npm install && cd ../client && npm install",
+    "dev": "npm run dev:blockchain & npm run dev:server & npm run dev:client",
+    "dev:blockchain": "cd blockchain && npx hardhat node",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "npm run build:blockchain && npm run build:server && npm run build:client",
+    "build:blockchain": "cd blockchain && npx hardhat compile",
+    "build:server": "cd server && npm run build",
+    "build:client": "cd client && npm run build",
+    "deploy:contract": "cd blockchain && npx hardhat run scripts/deploy.js --network sepolia",
+    "test": "npm run test:blockchain && npm run test:server",
+    "test:blockchain": "cd blockchain && npx hardhat test",
+    "test:server": "cd server && npm test",
+    "clean": "rm -rf node_modules blockchain/node_modules server/node_modules client/node_modules && npm install"
+  },
+  "keywords": [
+    "ethereum",
+    "blockchain",
+    "solidity",
+    "react",
+    "certificate",
+    "verification",
+    "web3"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

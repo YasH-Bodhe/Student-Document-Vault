@@ -1,0 +1,80 @@
+# Dependencies
+node_modules/
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# Build files
+/dist
+/build
+.next
+out/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.vim/
+
+# Testing
+/coverage
+.nyc_output
+jest.cache
+
+# Production
+/blockchain/artifacts
+/blockchain/cache
+/blockchain/typechain-types
+/server/dist
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Misc
+*.pem
+.cache
+.parcel-cache
+.next
+out
+dist-ssr
+*.local
+
+# Hardhat files
+/blockchain/node_modules
+/blockchain/.hardhat
+
+# Database
+/server/.mongodb
+dump/
+data/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
+Thumbs.db
+*.swp
+.AppleDouble
+.LSOverride
+
+# IDE
+*.code-workspace
+.vscode-server/
