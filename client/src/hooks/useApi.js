@@ -171,22 +171,34 @@ export const useApi = () => {
 
   const downloadCertificate = async (certificateId) => {
     try {
-      const response = await apiClient.get(`/certificates/${certificateId}/download`, {
+      console.log('🔗 Full Certificate ID:', certificateId);
+      console.log('📊 ID length:', certificateId.length);
+      
+      const encodedId = encodeURIComponent(certificateId);
+      const url = `/certificates/${encodedId}/download`;
+      
+      console.log('🌐 Request URL:', url);
+      
+      const response = await apiClient.get(url, {
         responseType: 'blob'
       });
       
+      console.log('📦 Response received:', response.status, response.headers['content-type']);
+      
       // Create a blob URL and trigger download
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `certificate_${certificateId.substring(0, 10)}.html`);
+      link.href = blobUrl;
+      link.setAttribute('download', `Certificate_${certificateId.substring(0, 8)}_${new Date().getFullYear()}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(blobUrl);
       
+      console.log('✅ PDF downloaded successfully');
       return true;
     } catch (err) {
+      console.error('❌ Download error:', err.response?.status, err.response?.statusText, err.message);
       setError(err.response?.data?.error || 'Failed to download certificate');
       return null;
     }

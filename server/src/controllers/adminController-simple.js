@@ -186,7 +186,8 @@ exports.getAdminDashboard = async (req, res) => {
       studentName: cert.studentName,
       courseName: cert.courseName,
       issueDate: cert.createdAt,
-      certificateId: cert.certificateId.substring(0, 20) + "...",
+      certificateId: cert.certificateId,  // FULL ID for download functionality
+      certificateIdDisplay: cert.certificateId.substring(0, 20) + "...",  // Truncated for display only
       isValid: cert.isValid,
     }));
 

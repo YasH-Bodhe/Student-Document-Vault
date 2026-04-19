@@ -1,10 +1,23 @@
 const db = require("../inMemoryDB");
+const crypto = require("crypto");
+
+// Get blockchain instances from app context
+let contract = null;
+let signer = null;
+
+const initializeBlockchain = (c, s) => {
+  contract = c;
+  signer = s;
+};
+
+module.exports.initializeBlockchain = initializeBlockchain;
 
 /**
- * @controller AdminController
- * @description Handles admin operations for certificate management
- * Simplified version using in-memory database (no MongoDB required)
+ * Validate Ethereum address format
  */
+const isValidAddress = (address) => {
+  return /^0x[a-fA-F0-9]{40}$/.test(address);
+};
 
 /**
  * Issue a new certificate (Admin only)
@@ -17,6 +30,7 @@ exports.issueCertificate = async (req, res) => {
       courseName,
       issuerName,
       certificateHash,
+      qrCodeData,
     } = req.body;
 
     // Validation
@@ -30,21 +44,86 @@ exports.issueCertificate = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    // Save to in-memory database
+    if (!isValidAddress(studentAddress)) {
+      return res.status(400).json({ error: "Invalid Ethereum address" });
+    }
+
+    let blockchainTxHash = null;
+    let certificateId = null;
+    let blockNumber = null;
+
+    // **WRITE TO BLOCKCHAIN** if contract is available
+    if (contract && signer) {
+      try {
+        console.log("📝 Writing certificate to blockchain...");
+        const contractWithSigner = contract.connect(signer);
+        
+        const tx = await contractWithSigner.issueCertificate(
+          studentAddress,
+          studentName,
+          courseName,
+          issuerName,
+          certificateHash
+        );
+
+        console.log(`  ⏳ Transaction sent: ${tx.hash}`);
+        const receipt = await tx.wait();
+        blockchainTxHash = receipt.hash || receipt.transactionHash || tx.hash;
+        blockNumber = receipt.blockNumber;
+        
+        // Parse the CertificateIssued event to get the certificate ID
+        const certificateIssuedEvent = receipt.logs
+          .map(log => {
+            try {
+              return contract.interface.parseLog(log);
+            } catch (e) {
+              return null;
+            }
+          })
+          .find(event => event && event.name === 'CertificateIssued');
+
+        if (certificateIssuedEvent) {
+          certificateId = certificateIssuedEvent.args.certificateId;
+          console.log(`✅ Certificate ID: ${certificateId}`);
+        } else {
+          throw new Error('CertificateIssued event not found in transaction');
+        }
+        
+        console.log(`✅ Certificate written to blockchain in block ${receipt.blockNumber}`);
+      } catch (blockchainError) {
+        console.error("❌ Blockchain write failed:", blockchainError.message);
+        return res.status(400).json({ 
+          error: "Failed to write certificate to blockchain: " + blockchainError.message 
+        });
+      }
+    } else {
+      return res.status(400).json({ 
+        error: "Blockchain not initialized. Cannot issue certificate." 
+      });
+    }
+
+    // Save to in-memory database with blockchain details using the correct certificate ID
     const certificate = db.saveCertificate({
+      certificateId,
       studentAddress,
       studentName,
       courseName,
       issuerName,
       certificateHash,
-      issuerAddress: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-      qrCodeData: `https://verify.vault/${studentAddress.substring(0, 10)}`,
+      blockchainTxHash,
+      blockNumber,
+      qrCodeData: qrCodeData || `https://verify.vault/${certificateId}`,
+      issuerAddress: signer.address,
     });
 
     res.status(201).json({
       success: true,
-      message: "Certificate issued successfully",
-      data: certificate,
+      message: "Certificate issued on blockchain successfully",
+      data: {
+        ...certificate,
+        blockchainTxHash,
+        blockNumber,
+      },
     });
   } catch (error) {
     console.error("Error issuing certificate:", error);

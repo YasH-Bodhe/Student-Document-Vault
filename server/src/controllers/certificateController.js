@@ -1,6 +1,6 @@
 const db = require("../inMemoryDB");
 const { ethers } = require("ethers");
-const { generateCertificatePDF } = require("../utils/certificatePDF");
+const generatePremiumCertificatePDF = require("../utils/generatePremiumCertificatePDF");
 
 /**
  * @controller CertificateController
@@ -148,31 +148,47 @@ exports.getStatistics = async (req, res) => {
 };
 
 /**
- * Download certificate as HTML (printable/PDF-ready)
+ * Download certificate as PDF (professional, print-ready)
  */
 exports.downloadCertificate = async (req, res) => {
   try {
-    const { certificateId } = req.params;
+    let { certificateId } = req.params;
 
+    // Decode URL-encoded certificate ID
+    certificateId = decodeURIComponent(certificateId);
+
+    console.log('📥 Download request received for certificate ID:', certificateId);
+    console.log('📊 ID length:', certificateId.length, 'characters');
+    console.log('🔍 Looking up certificate in database...');
+    
     const certificate = db.getCertificateById(certificateId);
 
     if (!certificate) {
+      console.log('❌ Certificate not found');
+      const allCerts = db.getAllCertificates();
+      console.log('📋 Available certificates:', allCerts.map(c => ({ id: c.certificateId, name: c.studentName })));
       return res.status(404).json({ error: "Certificate not found" });
     }
 
-    // Generate HTML certificate
-    const html = generateCertificatePDF(certificate);
+    console.log('✅ Certificate found:', certificate.certificateId, certificate.studentName);
 
-    // Set headers for download
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    // Generate premium PDF certificate
+    const pdfBuffer = await generatePremiumCertificatePDF(certificate);
+
+    console.log('✅ PDF generated successfully. Size:', pdfBuffer.length, 'bytes');
+
+    // Set headers for PDF download
+    res.setHeader('Content-Type', 'application/pdf');
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="certificate_${certificate.studentName.replace(/\s+/g, '_')}.html"`
+      `attachment; filename="Certificate_${certificate.studentName.replace(/\s+/g, '_')}_${new Date().getFullYear()}.pdf"`
     );
+    
+    res.setHeader('Content-Length', pdfBuffer.length);
 
-    res.send(html);
+    res.send(pdfBuffer);
   } catch (error) {
-    console.error("Error downloading certificate:", error);
+    console.error("❌ Error downloading certificate:", error);
     res.status(500).json({ error: "Failed to download certificate" });
   }
 };

@@ -1,16 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { useWallet } from '../context/WalletContext';
-
-// Simple ABI for certificate functions (extract from compiled contract)
-const CERTIFICATE_ABI = [
-  'function verifyCertificate(bytes32 _certificateId) external view returns (tuple(bytes32 certificateId, address studentAddress, string studentName, string courseName, uint256 issueDate, address issuerAddress, string issuerName, bool isValid, string certificateHash))',
-  'function isCertificateValid(bytes32 _certificateId) external view returns (bool)',
-  'function getCertificatesByStudent(address _studentAddress) external view returns (bytes32[])',
-  'function getCertificateCountByStudent(address _studentAddress) external view returns (uint256)',
-  'function issueCertificate(address _studentAddress, string memory _studentName, string memory _courseName, string memory _issuerName, string memory _certificateHash) external returns (bytes32)',
-  'function revokeCertificate(bytes32 _certificateId) external',
-];
+import CERTIFICATE_ABI from '../contracts/CertificateVault_ABI.js';
 
 export const useContract = (contractAddress) => {
   const { provider, signer } = useWallet();
@@ -21,7 +12,19 @@ export const useContract = (contractAddress) => {
   useEffect(() => {
     if (provider && contractAddress) {
       try {
+        if (!Array.isArray(CERTIFICATE_ABI) || CERTIFICATE_ABI.length === 0) {
+          throw new Error('Invalid ABI format');
+        }
         const instance = new ethers.Contract(contractAddress, CERTIFICATE_ABI, provider);
+        console.log('✅ Contract instance created with ABI length:', CERTIFICATE_ABI.length);
+        
+        // Log what functions are in the contract interface
+        const functions = Object.keys(instance.interface.functions || {});
+        console.log('📋 Available functions in contract interface:', functions);
+        
+        const hasIssueCertificate = functions.some(f => f.includes('issueCertificate'));
+        console.log('🔍 Has issueCertificate function:', hasIssueCertificate);
+        
         setContract(instance);
       } catch (err) {
         console.error('Error initializing contract:', err);
@@ -75,7 +78,17 @@ export const useContract = (contractAddress) => {
     setError(null);
 
     try {
+      console.log('🚀 Attempting to issue certificate with params:', {
+        studentAddress,
+        studentName,
+        courseName,
+        issuerName,
+        certificateHashPrefix: certificateHash?.substring(0, 10) + '...'
+      });
+      
       const contractWithSigner = contract.connect(signer);
+      console.log('✅ Contract connected with signer');
+      
       const tx = await contractWithSigner.issueCertificate(
         studentAddress,
         studentName,
@@ -83,11 +96,48 @@ export const useContract = (contractAddress) => {
         issuerName,
         certificateHash
       );
+      console.log('✅ Transaction sent:', tx.hash);
       
       const receipt = await tx.wait();
-      return receipt;
+      console.log('📦 Certificate issue receipt:', receipt);
+      
+      // Parse the CertificateIssued event to extract the certificate ID
+      let certificateId = null;
+      if (receipt && receipt.logs && receipt.logs.length > 0) {
+        console.log(`📋 Parsing ${receipt.logs.length} logs from receipt`);
+        for (const log of receipt.logs) {
+          try {
+            const parsed = contract.interface.parseLog(log);
+            if (parsed && parsed.name === 'CertificateIssued') {
+              certificateId = parsed.args.certificateId;
+              console.log('✅ Certificate ID from event:', certificateId);
+              break;
+            }
+          } catch (e) {
+            // Ignore parsing errors for logs that aren't from our contract
+          }
+        }
+      } else {
+        console.warn('⚠️ No logs found in receipt');
+      }
+      
+      return {
+        receipt,
+        certificateId,
+        transactionHash: receipt.hash || tx.hash,
+        blockNumber: receipt.blockNumber
+      };
     } catch (err) {
-      setError(err.message || 'Failed to issue certificate');
+      console.error('❌ Certificate issuance failed:', err);
+      const errorMsg = err.reason || err.message || 'Unknown error occurred';
+      setError(errorMsg);
+      console.error('Full error details:', {
+        name: err.name,
+        message: err.message,
+        reason: err.reason,
+        code: err.code,
+        shortString: err.shortString
+      });
       return null;
     } finally {
       setLoading(false);

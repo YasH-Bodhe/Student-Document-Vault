@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 import { useWallet } from '../context/WalletContext';
 import { useApi } from '../hooks/useApi';
 import { useContract } from '../hooks/useContract';
@@ -7,8 +8,9 @@ import { FiDownload, FiLoader, FiCheck, FiCopy, FiX } from 'react-icons/fi';
 
 const AdminDashboard = () => {
   const { account, isConnected } = useWallet();
-  const { issueCertificate, revokeCertificate, getAdminDashboard, generateQRCode, downloadCertificate } = useApi();
-  const { contract } = useContract(import.meta.env.VITE_CONTRACT_ADDRESS);
+  const { getAdminDashboard, downloadCertificate } = useApi();
+  const { contract, issueCertificate: issueViaContract, loading: contractLoading, error: contractError } = useContract(import.meta.env.VITE_CONTRACT_ADDRESS);
+  const { storeCertificateMetadata } = useApi();
   
   const [formData, setFormData] = useState({
     studentAddress: '',
@@ -53,17 +55,57 @@ const AdminDashboard = () => {
     setIssueSuccess(null);
 
     try {
-      const result = await issueCertificate({
-        studentAddress: formData.studentAddress,
-        studentName: formData.studentName,
-        courseName: formData.courseName,
-        issuerName: formData.issuerName,
-        certificateHash: formData.certificateHash,
-        qrCodeData: '',
-      }, account);
+      // Validate and normalize address
+      let checksumAddress;
+      try {
+        checksumAddress = ethers.getAddress(formData.studentAddress.trim().toLowerCase());
+      } catch (err) {
+        setError('Invalid Ethereum address');
+        setIssueLoading(false);
+        return;
+      }
 
-      if (result && result.success) {
-        setIssueSuccess(result);
+      // Call smart contract directly - THIS TRIGGERS METAMASK!
+      console.log('🔐 Calling smart contract to issue certificate...');
+      const receipt = await issueViaContract(
+        checksumAddress,
+        formData.studentName,
+        formData.courseName,
+        formData.issuerName,
+        formData.certificateHash
+      );
+
+      if (receipt) {
+        // Save certificate metadata to backend database
+        const metadataPayload = {
+          certificateId: receipt.certificateId,
+          studentAddress: checksumAddress,
+          studentName: formData.studentName,
+          courseName: formData.courseName,
+          issuerAddress: account,
+          issuerName: formData.issuerName,
+          certificateHash: formData.certificateHash,
+          transactionHash: receipt.transactionHash,
+          blockNumber: receipt.blockNumber,
+          blockchainTxHash: receipt.transactionHash,
+          qrCodeData: `https://verify.vault/${receipt.certificateId}`,
+        };
+        
+        console.log('💾 Saving certificate metadata to backend...');
+        await storeCertificateMetadata(metadataPayload);
+        console.log('✅ Certificate metadata saved to backend!');
+        
+        setIssueSuccess({
+          success: true,
+          certificateId: receipt.certificateId || 'Issued',
+          transactionHash: receipt.transactionHash,
+          blockNumber: receipt.blockNumber,
+        });
+        
+        console.log('✅ Certificate issued on blockchain!');
+        console.log('📝 Certificate ID:', receipt.certificateId);
+        console.log('📝 Transaction:', receipt.transactionHash);
+        
         setFormData({
           studentAddress: '',
           studentName: '',
@@ -75,9 +117,10 @@ const AdminDashboard = () => {
         // Refresh dashboard
         setTimeout(fetchDashboard, 2000);
       } else {
-        setError(result?.error || 'Failed to issue certificate');
+        setError(contractError || 'Failed to issue certificate');
       }
     } catch (err) {
+      console.error('Error:', err);
       setError(err.message || 'An error occurred');
     } finally {
       setIssueLoading(false);
@@ -115,8 +158,16 @@ const AdminDashboard = () => {
     });
   };
 
-  const handleDownloadCertificate = async (certId) => {
-    await downloadCertificate(certId);
+  const handleDownloadCertificate = async (certificate) => {
+    try {
+      console.log('📥 Downloading premium certificate PDF...', certificate.certificateId);
+      await downloadCertificate(certificate.certificateId);
+      console.log('✅ Certificate PDF downloaded successfully!');
+      setError('');
+    } catch (err) {
+      console.error('❌ Download failed:', err);
+      setError('Failed to download certificate. Please try again.');
+    }
   };
 
   return (
@@ -166,7 +217,7 @@ const AdminDashboard = () => {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <FiCheck className="text-xl" />
-                  <span>Certificate issued successfully! 🎉</span>
+                  <span>✅ Certificate issued on blockchain! 🎉</span>
                 </div>
                 <button 
                   onClick={() => setIssueSuccess(null)}
@@ -177,13 +228,30 @@ const AdminDashboard = () => {
               </div>
               
               <div className="space-y-3">
-                {issueSuccess.data?.blockchainTxHash && (
+                {/* CERTIFICATE ID - HIGHLIGHTED */}
+                <div className="bg-blue-500/30 p-4 rounded border-2 border-blue-400 shadow-lg">
+                  <p className="text-xs text-blue-200 mb-2 font-bold">🆔 CERTIFICATE ID (Use this to verify):</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-lg font-mono font-bold break-all text-blue-100">{issueSuccess.certificateId}</p>
+                    <button 
+                      onClick={() => copyToClipboard(issueSuccess.certificateId)}
+                      className="flex-shrink-0 hover:text-blue-200 transition"
+                      title="Copy Certificate ID"
+                    >
+                      <FiCopy className="text-2xl" />
+                    </button>
+                  </div>
+                  {copied && <p className="text-sm mt-2 text-blue-200">✓ Certificate ID copied to clipboard!</p>}
+                </div>
+
+                {/* Transaction Hash - Secondary */}
+                {issueSuccess.transactionHash && (
                   <div className="bg-white/5 p-3 rounded border border-white/10">
-                    <p className="text-xs text-gray-300 mb-1">Blockchain Transaction Hash:</p>
+                    <p className="text-xs text-gray-300 mb-1">✓ Blockchain Transaction Hash:</p>
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-mono break-all">{issueSuccess.data.blockchainTxHash}</p>
+                      <p className="text-sm font-mono break-all">{issueSuccess.transactionHash}</p>
                       <button 
-                        onClick={() => copyToClipboard(issueSuccess.data.blockchainTxHash)}
+                        onClick={() => copyToClipboard(issueSuccess.transactionHash)}
                         className="flex-shrink-0 hover:text-blue-300 transition"
                         title="Copy TX Hash"
                       >
@@ -192,40 +260,14 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 )}
-
-                <div className="bg-white/5 p-3 rounded border border-white/10">
-                  <p className="text-xs text-gray-300 mb-1">Certificate ID:</p>
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-mono break-all">{issueSuccess.data?.certificateId}</p>
-                    <button 
-                      onClick={() => copyToClipboard(issueSuccess.data?.certificateId)}
-                      className="flex-shrink-0 hover:text-blue-300 transition"
-                      title="Copy Certificate ID"
-                    >
-                      <FiCopy className="text-lg" />
-                    </button>
+                
+                {/* Block Number */}
+                {issueSuccess.blockNumber && (
+                  <div className="bg-white/5 p-3 rounded border border-white/10">
+                    <p className="text-xs text-gray-300 mb-1">📦 Block Number:</p>
+                    <p className="text-sm font-mono">{issueSuccess.blockNumber}</p>
                   </div>
-                  {copied && <p className="text-xs mt-1 text-blue-300">✓ Copied!</p>}
-                </div>
-
-                <div className="flex gap-2 mt-4">
-                  {issueSuccess.data?.certificateId && (
-                    <button 
-                      onClick={() => handleDownloadCertificate(issueSuccess.data.certificateId)}
-                      className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded transition text-sm"
-                      title="Download Certificate"
-                    >
-                      <FiDownload className="text-lg" />
-                      Download Certificate
-                    </button>
-                  )}
-                  <button 
-                    onClick={() => setSelectedCert(issueSuccess.data)}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded transition text-sm"
-                  >
-                    View Details
-                  </button>
-                </div>
+                )}
               </div>
             </div>
           )}
@@ -307,12 +349,13 @@ const AdminDashboard = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={issueLoading}
+              disabled={issueLoading || !contract}
               className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg disabled:opacity-50 px-6 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
             >
               {issueLoading ? <FiLoader className="animate-spin" /> : <FiCheck />}
-              {issueLoading ? 'Issuing...' : 'Issue Certificate'}
+              {issueLoading ? 'Confirm in MetaMask...' : '🦊 Sign & Issue Certificate'}
             </button>
+            <p className="text-xs text-gray-400 mt-2 text-center">💡 MetaMask popup will appear on your screen</p>
           </form>
         </div>
 
@@ -332,7 +375,7 @@ const AdminDashboard = () => {
                     <div className="flex-1">
                       <h3 className="font-semibold hover:text-purple-400 transition">{cert.studentName}</h3>
                       <p className="text-sm text-gray-400">{cert.courseName}</p>
-                      <p className="text-xs text-gray-500 mt-2 font-mono break-all">{cert.certificateId}</p>
+                      <p className="text-xs text-gray-500 mt-2 font-mono break-all">{cert.certificateIdDisplay || cert.certificateId}</p>
                       <p className="text-xs text-gray-600 mt-1">Issued: {new Date(cert.issueDate).toLocaleDateString()}</p>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0">
@@ -392,7 +435,7 @@ const AdminDashboard = () => {
                 <div className="flex gap-3 pt-4 border-t border-white/10">
                   <button 
                     onClick={() => {
-                      handleDownloadCertificate(selectedCert.certificateId);
+                      handleDownloadCertificate(selectedCert);
                       setSelectedCert(null);
                     }}
                     className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition text-white"

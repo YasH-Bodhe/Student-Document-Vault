@@ -97,6 +97,10 @@ const initializeBlockchain = async () => {
     const adminControllerSimple = require("./controllers/adminController-simple");
     adminControllerSimple.initializeBlockchain(contract, signer);
 
+    // Also initialize the main admin controller
+    const adminController = require("./controllers/adminController");
+    adminController.initializeBlockchain(contract, signer);
+
     // Initialize verification controller with contract
     const verificationController = require("./controllers/verificationController");
     verificationController.initializeContract(contract);
