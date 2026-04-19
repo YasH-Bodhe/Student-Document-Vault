@@ -7,35 +7,36 @@ const LandingPage = () => {
   const { connectWallet, isConnected, error, isLoading } = useWallet();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white overflow-hidden">
       
       {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute w-96 h-96 bg-purple-600/30 rounded-full blur-3xl -top-20 -left-20 animate-pulse"></div>
-        <div className="absolute w-96 h-96 bg-indigo-600/30 rounded-full blur-3xl bottom-20 right-10 animate-pulse" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute w-96 h-96 bg-purple-600/40 rounded-full blur-3xl -top-20 -left-20 animate-pulse"></div>
+        <div className="absolute w-96 h-96 bg-indigo-600/40 rounded-full blur-3xl bottom-20 right-10 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute w-72 h-72 bg-purple-900/30 rounded-full blur-3xl top-1/2 left-1/2 animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
 
       {/* Content */}
       <div className="relative z-10">
         
         {/* Hero Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
           <div className="animate-slide-in">
-            <h1 className="text-6xl md:text-7xl font-bold mb-6 gradient-text">
+            <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 gradient-text leading-tight">
               Student Document Vault
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Secure blockchain-based certificate verification powered by Ethereum
+            <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto font-light">
+              Immutable blockchain-based certificate verification powered by Ethereum. Issue, verify, and showcase credentials with complete transparency.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
               {isConnected ? (
                 <>
-                  <Link to="/student" className="btn-primary">
-                    View Dashboard
+                  <Link to="/student" className="btn-primary px-8 py-4 text-lg">
+                    📊 View Dashboard
                   </Link>
-                  <Link to="/verify" className="btn-secondary">
-                    Verify Certificate
+                  <Link to="/verify" className="btn-secondary px-8 py-4 text-lg">
+                    ✓ Verify Certificate
                   </Link>
                 </>
               ) : (
@@ -43,57 +44,62 @@ const LandingPage = () => {
                   <button 
                     onClick={connectWallet} 
                     disabled={isLoading}
-                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="btn-primary px-8 py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? 'Connecting...' : 'Connect MetaMask'}
+                    {isLoading ? '⏳ Connecting...' : '🦊 Connect MetaMask'}
                   </button>
-                  <Link to="/verify" className="btn-secondary">
-                    Verify Certificate
+                  <Link to="/verify" className="btn-secondary px-8 py-4 text-lg">
+                    ✓ Verify Certificate
                   </Link>
                 </>
               )}
             </div>
 
             {error && (
-              <div className="mt-6 p-4 bg-red-500/20 border border-red-500/50 text-red-200 rounded-lg max-w-md mx-auto">
-                <p className="text-sm"><strong>Error:</strong> {error}</p>
+              <div className="mt-8 p-4 bg-red-500/20 border border-red-500/50 text-red-200 rounded-lg max-w-md mx-auto animate-slide-in">
+                <p className="text-sm"><strong>⚠️ Error:</strong> {error}</p>
               </div>
             )}
           </div>
 
           {/* Stats */}
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
-            <div className="glass p-6 rounded-xl">
-              <p className="text-4xl font-bold gradient-text mb-2">100%</p>
-              <p className="text-gray-400">Blockchain Verified</p>
+          <div className="grid md:grid-cols-3 gap-8 mt-20">
+            <div className="certificate-card">
+              <p className="text-5xl font-bold gradient-text mb-3">100%</p>
+              <p className="text-gray-300 font-semibold">Blockchain Verified</p>
+              <p className="text-sm text-gray-400 mt-2">On Ethereum Network</p>
             </div>
-            <div className="glass p-6 rounded-xl">
-              <p className="text-4xl font-bold gradient-text mb-2">Immutable</p>
-              <p className="text-gray-400">Tamper-Proof Records</p>
+            <div className="certificate-card">
+              <p className="text-5xl font-bold gradient-text mb-3">∞</p>
+              <p className="text-gray-300 font-semibold">Immutable Records</p>
+              <p className="text-sm text-gray-400 mt-2">Tamper-Proof Storage</p>
             </div>
-            <div className="glass p-6 rounded-xl">
-              <p className="text-4xl font-bold gradient-text mb-2">Instant</p>
-              <p className="text-gray-400">Real-time Verification</p>
+            <div className="certificate-card">
+              <p className="text-5xl font-bold gradient-text mb-3">⚡</p>
+              <p className="text-gray-300 font-semibold">Instant Verification</p>
+              <p className="text-sm text-gray-400 mt-2">Real-time Authentication</p>
             </div>
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-          <h2 className="text-4xl font-bold text-center mb-16 gradient-text">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <h2 className="text-5xl font-bold text-center mb-20 gradient-text">
             Why Choose Student Vault?
           </h2>
 
           <div className="bento-grid">
             {/* Feature 1 */}
             <div className="certificate-card">
-              <div className="flex items-center gap-4 mb-4">
-                <FiShield className="text-3xl text-purple-500" />
-                <h3 className="text-xl font-bold">Secure & Immutable</h3>
+              <div className="flex items-start gap-4 mb-6">
+                <FiShield className="text-4xl text-purple-400 flex-shrink-0 mt-1" />
+                <div className="text-left">
+                  <h3 className="text-2xl font-bold mb-2">Secure & Immutable</h3>
+                  <p className="text-gray-400 leading-relaxed">
+                    Certificates are stored on the Ethereum blockchain, making them impossible to forge or tamper with. Your credentials are permanently secured.
+                  </p>
+                </div>
               </div>
-              <p className="text-gray-400">
-                Certificates are stored on the Ethereum blockchain, making them impossible to forge or tamper with.
-              </p>
             </div>
 
             {/* Feature 2 */}

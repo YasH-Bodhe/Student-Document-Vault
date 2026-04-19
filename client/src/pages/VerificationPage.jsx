@@ -44,41 +44,42 @@ const VerificationPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white py-12">
-      <div className="max-w-4xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 gradient-text">Verify Certificate</h1>
-          <p className="text-gray-400">Check the authenticity of any certificate</p>
+        <div className="text-center mb-12 animate-slide-in">
+          <h1 className="text-5xl font-bold mb-4 gradient-text">Verify Certificate</h1>
+          <p className="text-lg text-gray-400">Check the authenticity of any blockchain-verified certificate</p>
         </div>
 
         {/* Search Form */}
-        <div className="glass p-8 rounded-2xl mb-8">
+        <div className="glass-premium p-8 rounded-2xl mb-8">
           <form onSubmit={verifyCert} className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold mb-2">Certificate ID or Hash</label>
+              <label className="block text-sm font-semibold mb-3 text-gray-300">Certificate ID or Hash</label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={certificateId}
                   onChange={(e) => setCertificateId(e.target.value)}
-                  placeholder="Enter certificate ID to verify..."
-                  className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition"
+                  placeholder="Paste certificate ID to verify..."
+                  className="input-modern flex-1"
                 />
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg disabled:opacity-50 px-6 py-3 rounded-lg font-semibold transition flex items-center gap-2"
+                  className="btn-primary disabled:opacity-50 px-8 py-3"
                 >
                   {loading ? <FiLoader className="animate-spin" /> : <FiSearch />}
-                  Verify
+                  <span className="hidden sm:inline">Verify</span>
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg">
+              <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg flex items-center gap-2">
+                <span>⚠️</span>
                 {error}
               </div>
             )}
@@ -87,72 +88,73 @@ const VerificationPage = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="glass p-12 rounded-2xl text-center">
-            <FiLoader className="text-5xl animate-spin mx-auto mb-4 text-purple-400" />
-            <p className="text-lg">Verifying certificate...</p>
+          <div className="glass-premium p-12 rounded-2xl text-center">
+            <FiLoader className="text-6xl animate-spin mx-auto mb-4 text-purple-400" />
+            <p className="text-lg">Verifying on Ethereum blockchain...</p>
           </div>
         )}
 
         {/* Result - Valid Certificate */}
         {!loading && verificationResult && verificationResult.isValid && (
-          <div className="glass p-8 rounded-2xl border-2 border-green-500/50 animate-fade-in">
-            <div className="flex items-center mb-6">
-              <FiCheckCircle className="text-6xl text-green-400 mr-4" />
+          <div className="glass-premium p-8 rounded-2xl border-2 border-green-500/50 animate-fade-in">
+            <div className="flex items-center gap-6 mb-8">
+              <FiCheckCircle className="text-7xl text-green-400 flex-shrink-0" />
               <div>
-                <h2 className="text-3xl font-bold gradient-text">Certificate Valid</h2>
-                <p className="text-gray-400">This is an authentic, verified certificate</p>
+                <h2 className="text-4xl font-bold text-green-400">Certificate Valid</h2>
+                <p className="text-gray-400 text-lg mt-1">✓ This is an authentic, blockchain-verified certificate</p>
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-3">
+            <div className="grid md:grid-cols-2 gap-8 mb-8">
+              <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-gray-400">Student Name</label>
-                  <p className="text-lg font-semibold">{verificationResult.certificate?.studentName}</p>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Student Name</label>
+                  <p className="text-xl font-semibold mt-2">{verificationResult.certificate?.studentName}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-400">Course Name</label>
-                  <p className="text-lg font-semibold">{verificationResult.certificate?.courseName}</p>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Course Name</label>
+                  <p className="text-xl font-semibold mt-2">{verificationResult.certificate?.courseName}</p>
                 </div>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-gray-400">Issue Date</label>
-                  <p className="text-lg font-semibold">{formatDate(verificationResult.certificate?.issueDate)}</p>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Issue Date</label>
+                  <p className="text-xl font-semibold mt-2">{formatDate(verificationResult.certificate?.issueDate)}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-gray-400">Issuer</label>
-                  <p className="text-lg font-semibold">{verificationResult.certificate?.issuerName}</p>
+                  <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Issuer</label>
+                  <p className="text-xl font-semibold mt-2">{verificationResult.certificate?.issuerName}</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <p className="text-sm text-gray-400">
-                <strong>Certificate ID:</strong><br />
-                <code className="bg-black/20 px-2 py-1 rounded font-mono text-xs break-all">
-                  {verificationResult.certificate?.certificateId}
-                </code>
+            <div className="pt-8 border-t border-white/10">
+              <p className="text-sm text-gray-400 mb-3">
+                <strong>Certificate ID:</strong>
               </p>
+              <code className="bg-white/5 px-4 py-3 rounded-lg font-mono text-xs break-all border border-white/10 block">
+                {verificationResult.certificate?.certificateId}
+              </code>
             </div>
           </div>
         )}
 
         {/* Result - Invalid Certificate */}
         {!loading && verificationResult && !verificationResult.isValid && (
-          <div className="glass p-8 rounded-2xl border-2 border-red-500/50 animate-fade-in">
-            <div className="flex items-center mb-6">
-              <FiXCircle className="text-6xl text-red-400 mr-4" />
+          <div className="glass-premium p-8 rounded-2xl border-2 border-red-500/50 animate-fade-in">
+            <div className="flex items-center gap-6 mb-8">
+              <FiXCircle className="text-7xl text-red-400 flex-shrink-0" />
               <div>
-                <h2 className="text-3xl font-bold text-red-400">Certificate Invalid</h2>
-                <p className="text-gray-400">This certificate is fake, revoked, or does not exist</p>
+                <h2 className="text-4xl font-bold text-red-400">Certificate Invalid</h2>
+                <p className="text-gray-400 text-lg mt-1">This certificate could not be verified</p>
               </div>
             </div>
 
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mt-6">
-              <p className="text-red-200">
-                ⚠️ <strong>Warning:</strong> This certificate could not be verified on the blockchain. Do not trust this certificate.
+            <div className="bg-red-500/20 border border-red-500/30 rounded-lg p-6">
+              <p className="text-red-200 flex items-start gap-3">
+                <span className="text-xl flex-shrink-0">⚠️</span>
+                <span><strong>Verification Failed:</strong> This certificate is either fake, revoked, or does not exist on the blockchain. Do not trust this credential.</span>
               </p>
             </div>
           </div>
@@ -160,24 +162,48 @@ const VerificationPage = () => {
 
         {/* Info Section */}
         {!verificationResult && !loading && (
-          <div className="grid md:grid-cols-2 gap-6 mt-12">
-            <div className="glass p-8 rounded-2xl">
-              <h3 className="text-xl font-bold mb-4 gradient-text">How to Verify</h3>
-              <ol className="space-y-2 text-gray-300 text-sm">
-                <li>1. Enter the certificate ID in the search box above</li>
-                <li>2. Or use a QR code scanner to scan the certificate</li>
-                <li>3. The system will check the blockchain</li>
-                <li>4. Results show if the certificate is authentic</li>
+          <div className="grid md:grid-cols-2 gap-8 mt-12">
+            <div className="certificate-card">
+              <h3 className="text-2xl font-bold mb-6 gradient-text">How to Verify</h3>
+              <ol className="space-y-3 text-gray-300 text-sm">
+                <li className="flex items-start gap-3">
+                  <span className="bg-purple-500/30 text-purple-300 rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">1</span>
+                  <span>Enter the certificate ID in the search box above</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="bg-purple-500/30 text-purple-300 rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">2</span>
+                  <span>Or scan the QR code from the certificate</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="bg-purple-500/30 text-purple-300 rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">3</span>
+                  <span>The system checks the Ethereum blockchain</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="bg-purple-500/30 text-purple-300 rounded-full w-6 h-6 flex items-center justify-center text-xs flex-shrink-0">4</span>
+                  <span>View instant results with full details</span>
+                </li>
               </ol>
             </div>
 
-            <div className="glass p-8 rounded-2xl">
-              <h3 className="text-xl font-bold mb-4 gradient-text">Security Features</h3>
-              <ul className="space-y-2 text-gray-300 text-sm">
-                <li>✓ Blockchain verified</li>
-                <li>✓ Immutable records</li>
-                <li>✓ Instant verification</li>
-                <li>✓ QR code support</li>
+            <div className="certificate-card">
+              <h3 className="text-2xl font-bold mb-6 gradient-text">Security Features</h3>
+              <ul className="space-y-3 text-gray-300 text-sm">
+                <li className="flex items-center gap-3">
+                  <span className="text-green-400 text-lg">✓</span>
+                  <span>Immutable Blockchain Records</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-green-400 text-lg">✓</span>
+                  <span>Real-time Verification</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-green-400 text-lg">✓</span>
+                  <span>QR Code Support</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-green-400 text-lg">✓</span>
+                  <span>Ethereum Backed</span>
+                </li>
               </ul>
             </div>
           </div>

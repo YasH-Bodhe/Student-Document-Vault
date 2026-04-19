@@ -171,43 +171,64 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white py-12">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
         {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-2 gradient-text">Admin Dashboard</h1>
-          <p className="text-gray-400">Manage student certificates on blockchain</p>
+        <div className="mb-12 animate-slide-in">
+          <h1 className="text-5xl md:text-6xl font-bold mb-3 gradient-text">Admin Dashboard</h1>
+          <p className="text-lg text-gray-400">Manage and issue student certificates on blockchain</p>
         </div>
 
         {/* Dashboard Stats */}
         {dashboard && (
-          <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <div className="glass p-6 rounded-xl">
-              <p className="text-3xl font-bold gradient-text mb-2">{dashboard.database?.totalCertificates}</p>
-              <p className="text-gray-400">Total Certificates</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="stat-card">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="stat-card-number">{dashboard.database?.totalCertificates}</p>
+                  <p className="text-gray-400 font-medium">Total Certificates</p>
+                </div>
+                <div className="text-5xl opacity-10">📜</div>
+              </div>
             </div>
-            <div className="glass p-6 rounded-xl">
-              <p className="text-3xl font-bold text-green-400 mb-2">{dashboard.database?.validCertificates}</p>
-              <p className="text-gray-400">Valid Certificates</p>
+            <div className="stat-card">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-4xl font-bold text-green-400 mb-2">{dashboard.database?.validCertificates}</p>
+                  <p className="text-gray-400 font-medium">Valid Certificates</p>
+                </div>
+                <div className="text-5xl opacity-10">✓</div>
+              </div>
             </div>
-            <div className="glass p-6 rounded-xl">
-              <p className="text-3xl font-bold text-red-400 mb-2">{dashboard.database?.revokedCertificates}</p>
-              <p className="text-gray-400">Revoked Certificates</p>
+            <div className="stat-card">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-4xl font-bold text-red-400 mb-2">{dashboard.database?.revokedCertificates}</p>
+                  <p className="text-gray-400 font-medium">Revoked Certificates</p>
+                </div>
+                <div className="text-5xl opacity-10">✗</div>
+              </div>
             </div>
-            <div className="glass p-6 rounded-xl">
-              <p className="text-3xl font-bold text-blue-400 mb-2">{dashboard.database?.uniqueStudents}</p>
-              <p className="text-gray-400">Unique Students</p>
+            <div className="stat-card">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-4xl font-bold text-blue-400 mb-2">{dashboard.database?.uniqueStudents}</p>
+                  <p className="text-gray-400 font-medium">Unique Students</p>
+                </div>
+                <div className="text-5xl opacity-10">👥</div>
+              </div>
             </div>
           </div>
         )}
 
         {/* Issue Certificate Form */}
-        <div className="glass p-8 rounded-2xl mb-12">
-          <h2 className="text-2xl font-bold mb-6 gradient-text">Issue New Certificate</h2>
+        <div className="glass-premium p-8 rounded-2xl mb-12">
+          <h2 className="text-3xl font-bold mb-8 gradient-text">Issue New Certificate</h2>
 
           {error && (
-            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6">
+            <div className="bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+              <span>⚠️</span>
               {error}
             </div>
           )}
@@ -272,12 +293,12 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          <form onSubmit={handleIssueCertificate} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
+          <form onSubmit={handleIssueCertificate} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
               
               {/* Student Address */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Student Ethereum Address</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">Student Ethereum Address</label>
                 <input
                   type="text"
                   name="studentAddress"
@@ -285,13 +306,13 @@ const AdminDashboard = () => {
                   onChange={handleInputChange}
                   placeholder="0x..."
                   required
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition"
+                  className="input-modern"
                 />
               </div>
 
               {/* Student Name */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Student Full Name</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">Student Full Name</label>
                 <input
                   type="text"
                   name="studentName"
@@ -299,13 +320,13 @@ const AdminDashboard = () => {
                   onChange={handleInputChange}
                   placeholder="John Doe"
                   required
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition"
+                  className="input-modern"
                 />
               </div>
 
               {/* Course Name */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Course Name</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">Course Name</label>
                 <input
                   type="text"
                   name="courseName"
@@ -313,13 +334,13 @@ const AdminDashboard = () => {
                   onChange={handleInputChange}
                   placeholder="Blockchain Development 101"
                   required
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition"
+                  className="input-modern"
                 />
               </div>
 
               {/* Issuer Name */}
               <div>
-                <label className="block text-sm font-semibold mb-2">Issuer Name</label>
+                <label className="block text-sm font-semibold mb-2 text-gray-300">Issuer Name</label>
                 <input
                   type="text"
                   name="issuerName"
@@ -327,14 +348,14 @@ const AdminDashboard = () => {
                   onChange={handleInputChange}
                   placeholder="Institution Name"
                   required
-                  className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition"
+                  className="input-modern"
                 />
               </div>
             </div>
 
             {/* Certificate Hash */}
             <div>
-              <label className="block text-sm font-semibold mb-2">Certificate Hash (IPFS/Metadata)</label>
+              <label className="block text-sm font-semibold mb-2 text-gray-300">Certificate Hash (IPFS/Metadata)</label>
               <input
                 type="text"
                 name="certificateHash"
@@ -342,7 +363,7 @@ const AdminDashboard = () => {
                 onChange={handleInputChange}
                 placeholder="QmXxxx... or metadata hash"
                 required
-                className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition"
+                className="input-modern"
               />
             </div>
 
@@ -350,37 +371,37 @@ const AdminDashboard = () => {
             <button
               type="submit"
               disabled={issueLoading || !contract}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg disabled:opacity-50 px-6 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2"
+              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 px-6 py-4 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 text-white transform hover:scale-105 hover:shadow-xl"
             >
               {issueLoading ? <FiLoader className="animate-spin" /> : <FiCheck />}
               {issueLoading ? 'Confirm in MetaMask...' : '🦊 Sign & Issue Certificate'}
             </button>
-            <p className="text-xs text-gray-400 mt-2 text-center">💡 MetaMask popup will appear on your screen</p>
+            <p className="text-xs text-gray-500 mt-2 text-center">💡 MetaMask popup will appear on your screen</p>
           </form>
         </div>
 
         {/* Recent Certificates */}
         {dashboard?.recentCertificates && dashboard.recentCertificates.length > 0 && (
-          <div className="glass p-8 rounded-2xl">
-            <h2 className="text-2xl font-bold mb-6 gradient-text">Recent Certificates</h2>
+          <div className="glass-premium p-8 rounded-2xl">
+            <h2 className="text-3xl font-bold mb-8 gradient-text">Recent Certificates</h2>
             
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {dashboard.recentCertificates.map((cert) => (
                 <div 
                   key={cert._id} 
                   onClick={() => setSelectedCert(cert)}
-                  className="bg-white/5 p-4 rounded-lg border border-white/10 hover:border-purple-500/50 hover:bg-white/10 cursor-pointer transition"
+                  className="certificate-card"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h3 className="font-semibold hover:text-purple-400 transition">{cert.studentName}</h3>
-                      <p className="text-sm text-gray-400">{cert.courseName}</p>
-                      <p className="text-xs text-gray-500 mt-2 font-mono break-all">{cert.certificateIdDisplay || cert.certificateId}</p>
-                      <p className="text-xs text-gray-600 mt-1">Issued: {new Date(cert.issueDate).toLocaleDateString()}</p>
+                      <h3 className="font-semibold text-lg hover:text-purple-400 transition">{cert.studentName}</h3>
+                      <p className="text-sm text-gray-400 mt-1">{cert.courseName}</p>
+                      <p className="text-xs text-gray-500 mt-3 font-mono break-all">{cert.certificateIdDisplay || cert.certificateId}</p>
+                      <p className="text-xs text-gray-600 mt-2">Issued: {new Date(cert.issueDate).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${cert.isValid ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                        {cert.isValid ? 'Valid' : 'Revoked'}
+                    <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${cert.isValid ? 'bg-green-500/30 text-green-300' : 'bg-red-500/30 text-red-300'}`}>
+                        {cert.isValid ? '✓ Valid' : '✗ Revoked'}
                       </span>
                     </div>
                   </div>
@@ -392,28 +413,28 @@ const AdminDashboard = () => {
 
         {/* Certificate Detail Modal */}
         {selectedCert && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur flex items-center justify-center z-50 p-4" onClick={() => setSelectedCert(null)}>
-            <div className="bg-slate-800 rounded-2xl max-w-2xl w-full max-h-96 overflow-y-auto border border-purple-500/30" onClick={(e) => e.stopPropagation()}>
-              <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 p-6 flex justify-between items-center">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xl flex items-center justify-center z-50 p-4" onClick={() => setSelectedCert(null)}>
+            <div className="glass-premium rounded-2xl max-w-2xl w-full max-h-96 overflow-y-auto animate-slide-in" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 p-6 flex justify-between items-center rounded-t-2xl">
                 <h2 className="text-2xl font-bold text-white">{selectedCert.studentName}</h2>
-                <button onClick={() => setSelectedCert(null)} className="hover:bg-white/20 p-2 rounded-lg transition">
+                <button onClick={() => setSelectedCert(null)} className="btn-icon text-white hover:text-gray-200">
                   <FiX className="text-2xl" />
                 </button>
               </div>
 
-              <div className="p-6 space-y-4">
+              <div className="p-8 space-y-6">
                 <div>
-                  <p className="text-gray-400 text-sm">Course</p>
-                  <p className="text-white font-semibold">{selectedCert.courseName}</p>
+                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Course</p>
+                  <p className="text-white font-semibold text-lg mt-2">{selectedCert.courseName}</p>
                 </div>
 
                 <div>
-                  <p className="text-gray-400 text-sm">Certificate ID</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <p className="text-white font-mono text-sm break-all bg-white/5 p-3 rounded flex-1">{selectedCert.certificateId}</p>
+                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Certificate ID</p>
+                  <div className="flex items-center gap-2 mt-3">
+                    <p className="text-white font-mono text-sm break-all bg-white/5 p-3 rounded-lg flex-1 border border-white/10">{selectedCert.certificateId}</p>
                     <button 
                       onClick={() => copyToClipboard(selectedCert.certificateId)}
-                      className="bg-blue-600 hover:bg-blue-700 p-3 rounded transition"
+                      className="bg-blue-600 hover:bg-blue-700 p-3 rounded-lg transition transform hover:scale-110"
                     >
                       <FiCopy className="text-white" />
                     </button>
@@ -421,31 +442,31 @@ const AdminDashboard = () => {
                 </div>
 
                 <div>
-                  <p className="text-gray-400 text-sm">Issue Date</p>
-                  <p className="text-white font-semibold">{new Date(selectedCert.issueDate).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}</p>
+                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Issue Date</p>
+                  <p className="text-white font-semibold text-lg mt-2">{new Date(selectedCert.issueDate).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}</p>
                 </div>
 
                 <div>
-                  <p className="text-gray-400 text-sm">Status</p>
-                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-semibold mt-2 ${selectedCert.isValid ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                    {selectedCert.isValid ? '✓ Valid' : '✗ Revoked'}
+                  <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Status</p>
+                  <span className={`inline-block px-4 py-2 rounded-lg text-sm font-semibold mt-3 ${selectedCert.isValid ? 'bg-green-500/30 text-green-300' : 'bg-red-500/30 text-red-300'}`}>
+                    {selectedCert.isValid ? '✓ Valid Certificate' : '✗ Revoked Certificate'}
                   </span>
                 </div>
 
-                <div className="flex gap-3 pt-4 border-t border-white/10">
+                <div className="flex gap-3 pt-6 border-t border-white/10">
                   <button 
                     onClick={() => {
                       handleDownloadCertificate(selectedCert);
                       setSelectedCert(null);
                     }}
-                    className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg font-semibold transition text-white"
+                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-4 py-3 rounded-lg font-semibold transition text-white transform hover:scale-105 hover:shadow-lg"
                   >
                     <FiDownload />
-                    Download
+                    Download PDF
                   </button>
                   <button 
                     onClick={() => setSelectedCert(null)}
-                    className="flex-1 px-4 py-2 rounded-lg font-semibold transition bg-white/10 hover:bg-white/20"
+                    className="flex-1 px-4 py-3 rounded-lg font-semibold transition bg-white/10 hover:bg-white/20 text-white border border-white/20"
                   >
                     Close
                   </button>
