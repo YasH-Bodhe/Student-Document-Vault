@@ -1,0 +1,37 @@
+{
+  "certificates": {
+    "0x3688404452525f4e78280a9b7626993ffe4f5d9645f100ea78bc406085ab6ca7": {
+      "certificateId": "0x3688404452525f4e78280a9b7626993ffe4f5d9645f100ea78bc406085ab6ca7",
+      "studentAddress": "0x3c44cdddb6a900c5e3eccba5eb332539b3caf371",
+      "studentName": "Yash",
+      "courseName": "Degree Of B.E Information technology",
+      "issuerAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "issuerName": "YASH BODHE",
+      "certificateHash": "Tests",
+      "qrCodeData": "https://verify.vault/0x3688404452525f4e78280a9b7626993ffe4f5d9645f100ea78bc406085ab6ca7",
+      "isValid": true,
+      "createdAt": "2026-04-19T06:51:19.062Z",
+      "updatedAt": "2026-04-19T06:51:33.450Z",
+      "verificationCount": 1,
+      "lastVerifiedAt": "2026-04-19T06:51:33.450Z"
+    },
+    "0x469f4e17dd0fc48729e9d68641df5ab3dc6c34ce2bc37b16ac1844cdba70df5e": {
+      "certificateId": "0x469f4e17dd0fc48729e9d68641df5ab3dc6c34ce2bc37b16ac1844cdba70df5e",
+      "studentAddress": "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      "studentName": "Yash Prashant Bodhe",
+      "courseName": "Degree Of B.E Information technology",
+      "issuerAddress": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "issuerName": "Bharati Vidyapeeth College Of Enginnering",
+      "certificateHash": "Test",
+      "qrCodeData": "https://verify.vault/0x469f4e17dd0fc48729e9d68641df5ab3dc6c34ce2bc37b16ac1844cdba70df5e",
+      "isValid": true,
+      "createdAt": "2026-04-19T06:55:40.166Z",
+      "updatedAt": "2026-04-19T06:56:38.632Z",
+      "verificationCount": 2,
+      "lastVerifiedAt": "2026-04-19T06:56:38.631Z"
+    }
+  },
+  "users": {},
+  "certificateId": 1,
+  "lastUpdated": "2026-04-19T06:56:38.632Z"
+}
