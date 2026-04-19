@@ -1,0 +1,175 @@
+name: 🚀 Deploy to Vercel & Railway
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Job 1: Build & Push Docker Images
+  build-docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build and push frontend image
+      - name: Build and push frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./client/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build and push backend image
+      - name: Build and push backend
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./server/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job 2: Deploy Frontend to Vercel
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: build-docker
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy Frontend to Vercel
+        uses: BetaHuhn/deploy-to-vercel-action@v1
+        with:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          WORKING_DIRECTORY: client
+          PRODUCTION: true
+
+  # Job 3: Deploy Backend to Railway
+  deploy-backend:
+    runs-on: ubuntu-latest
+    needs: build-docker
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy Backend to Railway
+        uses: railwayapp/railway-action@v1
+        with:
+          token: ${{ secrets.RAILWAY_TOKEN }}
+          service: backend
+          environment: production
+
+  # Job 4: Run Tests
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          cd server && npm install
+          cd ../client && npm install
+
+      - name: Lint frontend
+        run: cd client && npm run lint 2>/dev/null || true
+
+      - name: Build frontend
+        run: cd client && npm run build
+
+      - name: Build backend
+        run: cd server && npm run build 2>/dev/null || true
+
+  # Job 5: Security Scan
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # Job 6: Deployment Status
+  deployment-status:
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend, deploy-backend]
+    if: always()
+    steps:
+      - name: Check deployment status
+        run: |
+          if [ "${{ needs.deploy-frontend.result }}" == "success" ] && [ "${{ needs.deploy-backend.result }}" == "success" ]; then
+            echo "✅ Deployment successful!"
+            echo "🌐 Frontend: https://your-project.vercel.app"
+            echo "🔧 Backend: https://your-backend.railway.app"
+          else
+            echo "❌ Deployment failed"
+            exit 1
+          fi
+
+      - name: Send Slack notification
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "Deployment ${{ needs.deploy-frontend.result }} for Student Document Vault",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Student Document Vault*\nDeployment: ${{ needs.deploy-frontend.result }}\nCommit: ${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

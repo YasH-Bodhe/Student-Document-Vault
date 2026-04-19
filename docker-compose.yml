@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Frontend - React/Vite
+  frontend:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    container_name: student-vault-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+      - VITE_CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - student-vault-network
+    restart: unless-stopped
+
+  # Backend - Express Server
+  backend:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    container_name: student-vault-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+      - HARDHAT_RPC_URL=${HARDHAT_RPC_URL}
+      - FRONTEND_URL=http://localhost:3000
+    volumes:
+      - ./server/database.json:/app/database.json
+    networks:
+      - student-vault-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  # Hardhat Blockchain Node (Optional - for local development)
+  hardhat:
+    build:
+      context: blockchain
+      dockerfile: Dockerfile
+    container_name: student-vault-blockchain
+    ports:
+      - "8545:8545"
+    environment:
+      - HARDHAT_NETWORK=hardhat
+    networks:
+      - student-vault-network
+    restart: unless-stopped
+    profiles:
+      - dev  # Only starts with: docker-compose --profile dev up
+
+networks:
+  student-vault-network:
+    driver: bridge
+
+volumes:
+  database:
+    driver: local
