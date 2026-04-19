@@ -4,6 +4,7 @@ import { useApi } from '../hooks/useApi';
 import { useContract } from '../hooks/useContract';
 import { formatDate, formatCertificateId } from '../utils/certificateUtils';
 import { FiCheckCircle, FiXCircle, FiLoader, FiCopy, FiDownload, FiX } from 'react-icons/fi';
+import QRCode from 'qrcode.react';
 
 const StudentDashboard = () => {
   const { account, isConnected } = useWallet();
@@ -73,29 +74,35 @@ const StudentDashboard = () => {
         <div className="bento-grid">
           {certificates.map((cert) => (
             <div key={cert.certificateId} className="certificate-card group cursor-pointer" onClick={() => setSelectedCert(cert)}>
-              <div className="flex items-start justify-between mb-6">
+              <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold group-hover:text-purple-400 transition mb-1">{cert.studentName}</h3>
                   <p className="text-sm text-gray-400">{cert.courseName}</p>
                 </div>
+                
+                {/* QR Code on Right */}
+                <div className="flex-shrink-0 bg-white p-2 rounded-lg">
+                  <QRCode value={`https://verify.vault.io/cert/${cert.certificateId}`} size={80} level="H" includeMargin={true} />
+                </div>
+
                 {cert.isValid ? (
-                  <FiCheckCircle className="text-green-400 text-3xl flex-shrink-0 ml-3" />
+                  <FiCheckCircle className="text-green-400 text-3xl flex-shrink-0" />
                 ) : (
-                  <FiXCircle className="text-red-400 text-3xl flex-shrink-0 ml-3" />
+                  <FiXCircle className="text-red-400 text-3xl flex-shrink-0" />
                 )}
               </div>
 
-              <div className="space-y-3 mb-6">
-                <p className="text-sm text-gray-300"><span className="font-semibold">Issued:</span> {formatDate(cert.createdAt || cert.issueDate)}</p>
-                <p className="text-sm text-gray-300"><span className="font-semibold">By:</span> {cert.issuerName}</p>
-                <p className="text-xs text-gray-400 font-mono break-all"><span className="font-semibold">ID:</span><br className="lg:hidden" /> {cert.certificateId.substring(0, 20)}...</p>
+              <div className="space-y-2 mb-4">
+                <p className="text-xs text-gray-300"><span className="font-semibold">Issued:</span> {formatDate(cert.createdAt || cert.issueDate)}</p>
+                <p className="text-xs text-gray-300"><span className="font-semibold">By:</span> {cert.issuerName}</p>
+                <p className="text-xs text-gray-400 font-mono break-all"><span className="font-semibold">ID:</span> {cert.certificateId.substring(0, 16)}...</p>
               </div>
 
               <div className="flex gap-2 flex-wrap">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${cert.isValid ? 'bg-green-500/30 text-green-300' : 'bg-red-500/30 text-red-300'}`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${cert.isValid ? 'bg-green-500/30 text-green-300' : 'bg-red-500/30 text-red-300'}`}>
                   {cert.isValid ? '✓ Valid' : '✗ Revoked'}
                 </span>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/30 text-blue-300">
+                <span className="px-2 py-1 rounded-full text-xs font-semibold bg-blue-500/30 text-blue-300">
                   {cert.verificationCount || cert.verifications || 0}x Verified
                 </span>
               </div>
@@ -134,6 +141,11 @@ const StudentDashboard = () => {
               <div>
                 <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider">Issued By</p>
                 <p className="text-white font-semibold text-lg mt-2">{selectedCert.issuerName}</p>
+              </div>
+
+              {/* QR Code in Modal */}
+              <div className="flex justify-center p-4 bg-white/5 rounded-lg border border-white/10">
+                <QRCode value={`https://verify.vault.io/cert/${selectedCert.certificateId}`} size={120} level="H" includeMargin={true} />
               </div>
 
               <div>

@@ -26,6 +26,7 @@ const AdminDashboard = () => {
   const [dashboard, setDashboard] = useState(null);
   const [selectedCert, setSelectedCert] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [showAllCertificates, setShowAllCertificates] = useState(false);
 
   useEffect(() => {
     if (isConnected) {
@@ -383,23 +384,34 @@ const AdminDashboard = () => {
         {/* Recent Certificates */}
         {dashboard?.recentCertificates && dashboard.recentCertificates.length > 0 && (
           <div className="glass-premium p-8 rounded-2xl">
-            <h2 className="text-3xl font-bold mb-8 gradient-text">Recent Certificates</h2>
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-3xl font-bold gradient-text">Recent Certificates</h2>
+              <button 
+                onClick={() => setShowAllCertificates(true)}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition transform hover:scale-105"
+              >
+                View All
+              </button>
+            </div>
             
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {dashboard.recentCertificates.map((cert) => (
                 <div 
                   key={cert._id} 
                   onClick={() => setSelectedCert(cert)}
-                  className="certificate-card"
+                  className="certificate-card p-4"
                 >
-                  <div className="flex justify-between items-start">
+                  <div className="flex justify-between items-start gap-4">
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg hover:text-purple-400 transition">{cert.studentName}</h3>
                       <p className="text-sm text-gray-400 mt-1">{cert.courseName}</p>
-                      <p className="text-xs text-gray-500 mt-3 font-mono break-all">{cert.certificateIdDisplay || cert.certificateId}</p>
-                      <p className="text-xs text-gray-600 mt-2">Issued: {new Date(cert.issueDate).toLocaleDateString()}</p>
+                      <p className="text-xs text-gray-500 mt-2 font-mono break-all">{cert.certificateIdDisplay || cert.certificateId}</p>
+                      <p className="text-xs text-gray-600 mt-1">Issued: {new Date(cert.issueDate).toLocaleDateString()}</p>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0 ml-4">
+                    <div className="flex flex-col items-center gap-3 flex-shrink-0">
+                      <div className="bg-white p-1 rounded-lg">
+                        <QRCode value={`https://verify.vault.io/cert/${cert.certificateId}`} size={60} level="L" includeMargin={false} />
+                      </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${cert.isValid ? 'bg-green-500/30 text-green-300' : 'bg-red-500/30 text-red-300'}`}>
                         {cert.isValid ? '✓ Valid' : '✗ Revoked'}
                       </span>
@@ -470,6 +482,65 @@ const AdminDashboard = () => {
                   >
                     Close
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* All Certificates View */}
+        {showAllCertificates && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xl flex items-center justify-center z-50 p-4" onClick={() => setShowAllCertificates(false)}>
+            <div className="glass-premium rounded-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-in" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-600 p-6 flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-white">All Issued Certificates</h2>
+                <button onClick={() => setShowAllCertificates(false)} className="btn-icon text-white hover:text-gray-200">
+                  <FiX className="text-2xl" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto flex-1 p-6">
+                <div className="space-y-3">
+                  {dashboard?.allCertificates && dashboard.allCertificates.length > 0 ? (
+                    dashboard.allCertificates.map((cert) => (
+                      <div key={cert._id} className="glass-premium p-4 rounded-lg border border-white/10 hover:border-purple-500/50 transition">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+                          {/* Certificate Info */}
+                          <div className="md:col-span-2">
+                            <h3 className="text-lg font-bold text-white">{cert.studentName}</h3>
+                            <p className="text-sm text-gray-400 mt-1">{cert.courseName}</p>
+                            <div className="mt-3 space-y-1">
+                              <p className="text-xs text-gray-500"><span className="font-semibold">Issued By:</span> {cert.issuerName}</p>
+                              <p className="text-xs text-gray-500"><span className="font-semibold">Date:</span> {new Date(cert.issueDate).toLocaleDateString()}</p>
+                              <p className="text-xs text-gray-400 font-mono break-all"><span className="font-semibold">ID:</span> {cert.certificateId.substring(0, 30)}...</p>
+                            </div>
+                            <div className="mt-3 flex gap-2">
+                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${cert.isValid ? 'bg-green-500/30 text-green-300' : 'bg-red-500/30 text-red-300'}`}>
+                                {cert.isValid ? '✓ Valid' : '✗ Revoked'}
+                              </span>
+                              <button 
+                                onClick={() => downloadCertificate(cert.certificateId)}
+                                className="px-3 py-1 rounded-lg text-xs font-semibold bg-blue-500/30 text-blue-300 hover:bg-blue-500/50 transition flex items-center gap-1"
+                              >
+                                <FiDownload className="text-sm" /> Download
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* QR Code */}
+                          <div className="flex justify-center items-center">
+                            <div className="bg-white p-2 rounded-lg">
+                              <QRCode value={`https://verify.vault.io/cert/${cert.certificateId}`} size={100} level="H" includeMargin={true} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-12">
+                      <p className="text-gray-400">No certificates found</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

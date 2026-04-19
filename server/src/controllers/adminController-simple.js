@@ -189,13 +189,29 @@ exports.getAdminDashboard = async (req, res) => {
       certificateId: cert.certificateId,  // FULL ID for download functionality
       certificateIdDisplay: cert.certificateId.substring(0, 20) + "...",  // Truncated for display only
       isValid: cert.isValid,
+      issuerName: cert.issuerName,
     }));
+
+    // Get all certificates sorted by date (most recent first)
+    const allCertificates = db.getAllCertificates()
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .map(cert => ({
+        _id: cert.certificateId,
+        studentName: cert.studentName,
+        courseName: cert.courseName,
+        issueDate: cert.createdAt,
+        certificateId: cert.certificateId,
+        certificateIdDisplay: cert.certificateId.substring(0, 20) + "...",
+        isValid: cert.isValid,
+        issuerName: cert.issuerName,
+      }));
 
     return res.status(200).json({
       success: true,
       dashboard: {
         database: stats,
         recentCertificates,
+        allCertificates,
       },
     });
   } catch (error) {
