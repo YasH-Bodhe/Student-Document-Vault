@@ -26,9 +26,9 @@
       "qrCodeData": "https://verify.vault/0x469f4e17dd0fc48729e9d68641df5ab3dc6c34ce2bc37b16ac1844cdba70df5e",
       "isValid": true,
       "createdAt": "2026-04-19T06:55:40.166Z",
-      "updatedAt": "2026-04-19T07:24:49.593Z",
-      "verificationCount": 3,
-      "lastVerifiedAt": "2026-04-19T07:24:49.593Z"
+      "updatedAt": "2026-04-19T09:22:59.312Z",
+      "verificationCount": 4,
+      "lastVerifiedAt": "2026-04-19T09:22:59.312Z"
     },
     "0x13a8f7f5eaaa212cb7bd66884f0b0616dc47ade61e91c71e69105b0da52cd141": {
       "certificateId": "0x13a8f7f5eaaa212cb7bd66884f0b0616dc47ade61e91c71e69105b0da52cd141",
@@ -48,5 +48,5 @@
   },
   "users": {},
   "certificateId": 1,
-  "lastUpdated": "2026-04-19T08:17:11.926Z"
+  "lastUpdated": "2026-04-19T09:22:59.312Z"
 }
